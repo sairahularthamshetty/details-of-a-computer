@@ -1,0 +1,82 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/utsname.h>
+
+void printSystemInfo() {
+    struct utsname systemInfo;
+
+    if (uname(&systemInfo) != -1) {
+        printf("Operating System: %s\n", systemInfo.sysname);
+        printf("Node Name: %s\n", systemInfo.nodename);
+        printf("Release Version: %s\n", systemInfo.release);
+        printf("Machine: %s\n", systemInfo.machine);
+    } else {
+        printf("Failed to retrieve system information.\n");
+    }
+}
+
+void printProcessorInfo() {
+    FILE* file = fopen("/proc/cpuinfo", "r");
+    if (file) {
+        char line[100];
+        while (fgets(line, sizeof(line), file)) {
+            if (strstr(line, "model name")) {
+                printf("Processor: %s", line + 13);
+                break;
+            }
+        }
+        fclose(file);
+    } else {
+        printf("Failed to retrieve processor information.\n");
+    }
+}
+
+void printMemoryInfo() {
+    FILE* file = fopen("/proc/meminfo", "r");
+    if (file) {
+        char line[100];
+        while (fgets(line, sizeof(line), file)) {
+            if (strstr(line, "MemTotal:")) {
+                printf("Total Memory: %s", line + 10);
+            }
+            if (strstr(line, "MemFree:")) {
+                printf("Free Memory: %s", line + 9);
+                break;
+            }
+        }
+        fclose(file);
+    } else {
+        printf("Failed to retrieve memory information.\n");
+    }
+}
+
+void printDiskInfo() {
+    FILE* file = fopen("/proc/mounts", "r");
+    if (file) {
+        char line[200];
+        printf("Mounted File Systems:\n");
+        while (fgets(line, sizeof(line), file)) {
+            printf("%s", line);
+        }
+        fclose(file);
+    } else {
+        printf("Failed to retrieve disk information.\n");
+    }
+}
+
+int main() {
+    printf("System Information:\n");
+    printSystemInfo();
+
+    printf("\nProcessor Information:\n");
+    printProcessorInfo();
+
+    printf("\nMemory Information:\n");
+    printMemoryInfo();
+
+    printf("\nDisk Information:\n");
+    printDiskInfo();
+
+    return 0;
+}
